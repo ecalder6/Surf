@@ -165,10 +165,12 @@
                     weight += 5;
                 if (aCard.IsCurrentBestOffer == true)
                     weight += 15;
-                if (aCard.MinimumSpend <= 25000)
+                if (aCard.MinimumSpend == 0)
                     weight += 10;
-                else if (aCard.MinimumSpend <= 10000)
-                    weight += 5;
+                else if (aCard.MinimumSpend <= 1000)
+                    weight += 6;
+                else if (aCard.MinimumSpend <= 3000)
+                    weight += 2;
                 if (aCard.IsPersonal == true) // this is to be confirmed if any preference needs to be applied if this is a personal card since the requester criteria data is unavailable
                     weight += 10;
                 aCard.RecommendationWeight = weight;
