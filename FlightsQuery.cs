@@ -6,6 +6,8 @@
     [Serializable]
     public class FlightsQuery
     {
+        // TODO see if we need something like this to get this read
+        // speak: SSMLHelper.Speak()
         [Prompt("Please enter your origin")]
         public string Origin { get; set; }
 

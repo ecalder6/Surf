@@ -36,7 +36,7 @@ namespace SurferBot
 
         public override string ToString()
         {
-            return Name + ", Issuer: " + Issuer + ", Bonus: " + Bonus;
+            return Name + ", Issuer: " + Issuer + ", Bonus: " + Bonus + ", RecommendationWeight: " + RecommendationWeight;
         }
     }
 

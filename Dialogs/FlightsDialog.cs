@@ -15,7 +15,11 @@
     {
         public async Task StartAsync(IDialogContext context)
         {
-            await context.PostAsync("Welcome to Travel Surfer!");
+            var welcomeMessage = context.MakeMessage();
+            var message = $"Welcome to Travel Surfer!";
+            welcomeMessage.Text = message;
+            welcomeMessage.Speak = message;
+            await context.PostAsync(welcomeMessage);
 
             var flightsFormDialog = FormDialog.FromForm(BuildFlightsForm, FormOptions.PromptInStart);
 
@@ -26,13 +30,17 @@
         {
             OnCompletionAsyncDelegate<FlightsQuery> processflightsSearch = async (context, state) =>
             {
-                await context.PostAsync($"Searching for free round trip flights from {state.Origin} to {state.Destination} departing {state.DepartDate.ToString("MM/dd/YYYY")} and returning {state.ReturnDate.ToString("MM/dd/YYYY")}...");
+                var searchMessage = context.MakeMessage();
+                var message = $"Searching for best credit cards to use on round trip flights from {state.Origin} to {state.Destination} " +
+                $"departing {state.DepartDate.ToString("MMMM dd, yyyy")} and returning {state.ReturnDate.ToString("MMMM dd, yyyy")}...";
+                searchMessage.Text = message;
+                searchMessage.Speak = message;
+                await context.PostAsync(searchMessage);
             };
 
             return new FormBuilder<FlightsQuery>()
                 .Field(nameof(FlightsQuery.Destination))
-                // TODO Look into pjhrasing for this
-                .Message("Looking for free flights to {Destination}...")
+                .Message("Looking for best credit cards to use to fly to {Destination}...")
                 .AddRemainingFields()
                 .OnCompletion(processflightsSearch)
                 .Build();
@@ -43,10 +51,14 @@
             try
             {
                 var searchQuery = await result;
-
                 var cards = await GetCards(searchQuery);
 
-                await context.PostAsync($"I found in total {cards.Count()} flights for your dates:");
+                var response = context.MakeMessage();
+                var responseMessage = $"I found the {cards.Count()} best cards to use for your travel dates. " +
+                    $"They are sorted by a recommendation score I have computed for you.";
+                response.Text = responseMessage;
+                response.Speak = responseMessage;
+                await context.PostAsync(response);
 
                 var resultMessage = context.MakeMessage();
                 resultMessage.AttachmentLayout = AttachmentLayoutTypes.Carousel;
@@ -58,7 +70,8 @@
                     {
                         // Todo: images?
                         Title = string.Format("{0} by {1}", card.Name, card.Issuer),
-                        Subtitle = string.Format("Get {0} points/miles bonus by spending ${1} within {2} days.", card.Bonus, card.MinimumSpend, card.DaysForMinSpend),
+                        Subtitle = string.Format("Weighted Score: {0}\nGet {1} points/miles bonus by spending ${2} within {3} days.", 
+                        card.RecommendationWeight, card.Bonus, card.MinimumSpend, card.DaysForMinSpend),
                         Buttons = new List<CardAction>()
                         {
                             new CardAction()
@@ -77,18 +90,24 @@
             }
             catch (FormCanceledException ex)
             {
-                string reply;
+                var response = context.MakeMessage();
+                await context.PostAsync(response);
 
                 if (ex.InnerException == null)
                 {
-                    reply = "You have canceled the operation. Quitting from the FlightsDialog";
+                    var cancelationMessage = "You have canceled the operation. Quitting from the FlightsDialog...";
+                    response.Text = cancelationMessage;
+                    response.Speak = cancelationMessage;
                 }
                 else
                 {
-                    reply = $"Oops! Something went wrong :( Technical Details: {ex.InnerException.Message}";
+                    var errorSpeak = "Something went wrong in FlightsDialog. Please find the exception text below for guidance:";
+                    var errorText = $"{errorSpeak}\n{ex}";
+                    response.Text = errorText;
+                    response.Speak = errorSpeak;
                 }
 
-                await context.PostAsync(reply);
+                await context.PostAsync(response);
             }
             finally
             {
