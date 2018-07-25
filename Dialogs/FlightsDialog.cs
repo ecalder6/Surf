@@ -58,7 +58,7 @@
                     {
                         // Todo: images?
                         Title = string.Format("{0} by {1}", card.Name, card.Issuer),
-                        Subtitle = string.Format("Get {0} points/miles bonus by spending {1} within {2} days.", card.Bonus, card.MinimumSpend, card.DaysForMinSpend),
+                        Subtitle = string.Format("Get {0} points/miles bonus by spending ${1} within {2} days.", card.Bonus, card.MinimumSpend, card.DaysForMinSpend),
                         Buttons = new List<CardAction>()
                         {
                             new CardAction()
@@ -100,6 +100,7 @@
         private async Task<IEnumerable<Card>> GetCards(FlightsQuery searchQuery)
         {
             CardFinder cardFinder = new CardFinder();
+            cardFinder.PopulateAirports();
             cardFinder.PopulateAirlines();
             cardFinder.PopulateCards();
             DateTime departureDate = searchQuery.DepartDate;
@@ -107,7 +108,12 @@
             Location origin = await cardFinder.GetPlace(searchQuery.Origin);
             Location destination = await cardFinder.GetPlace(searchQuery.Destination);
             float minPrice = await cardFinder.GetFlightPriceAsync(origin, destination, departureDate, returnDate);
-            List<Card> creditCards = await cardFinder.GetAwardCreditCards(origin.PlaceName, destination.PlaceName);
+
+            List<string> fromAirports = new List<string>();
+            List<string> toAirports = new List<string>();
+            cardFinder.AddAirports(fromAirports, origin, searchQuery.Origin);
+            cardFinder.AddAirports(toAirports, destination, searchQuery.Destination);
+            List<Card> creditCards = await cardFinder.GetAwardCreditCards(fromAirports, toAirports);
 
             // Where the recommendation engine comes into play.
 

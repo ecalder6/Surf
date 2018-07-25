@@ -12,6 +12,7 @@
     using System.Threading.Tasks;
     using FlightQuoteJson;
     using PlaceInfoJson;
+    using AirportInfoJson;
 
     class CardFinder
     {
@@ -21,11 +22,16 @@
         public Dictionary<string, string> AirlineToCode = new Dictionary<string, string>();
         public Dictionary<string, string> CodeToAirline = new Dictionary<string, string>();
         public Dictionary<string, Node> Graph = new Dictionary<string, Node>();
+        public Dictionary<string, List<AirportInfo>> CityToAirports = new Dictionary<string, List<AirportInfo>>();
+        public HashSet<string> AirportCodes = new HashSet<string>();
 
-        public async Task<List<Card>> GetAwardCreditCards(string from, string to)
+        public async Task<List<Card>> GetAwardCreditCards(List<string> fromAirports, List<string> toAirports)
         {
             _client.DefaultRequestHeaders.Clear();
-            string address = string.Format(_baseAddress + "?f={0}&t={1}&o=0&c=y&s=1&p=0&n=10&v=2", from, to);
+            string address = _baseAddress;
+            address += GenerateAwardURL(fromAirports, 'f');
+            address += GenerateAwardURL(toAirports, 't');
+            address += "&o=0&c=y&s=1&p=0&n=10&v=2";
             string response = await _client.GetStringAsync(address);
             var awardInfo = JsonConvert.DeserializeObject<AwardInfo>(response);
             foreach (Result result in awardInfo.Results)
@@ -93,7 +99,16 @@
             string address = string.Format("https://skyscanner-skyscanner-flight-search-v1.p.mashape.com/apiservices/autosuggest/v1.0/US/USD/en-US/?query={0}", input);
             string response = await _client.GetStringAsync(address);
             var placeInfo = JsonConvert.DeserializeObject<PlaceInfo>(response);
-            return placeInfo.Places.First();
+            Location place = placeInfo.Places.First();
+            if (place.PlaceName == "L.A")
+            {
+                place.PlaceName = "Los Angeles";
+            }
+            else if (place.PlaceName == "NYC")
+            {
+                place.PlaceName = "New York City";
+            }
+            return place;
         }
 
         private List<Card> FindRewardsCards(long miles, string code)
@@ -164,12 +179,33 @@
             return result;
         }
 
+        public void PopulateAirports()
+        {
+            _client.DefaultRequestHeaders.Clear();
+            string address = "https://raw.githubusercontent.com/ecalder6/Surf/master/data/airports.json";
+            string response = _client.GetStringAsync(address).Result;
+            var airprotsInfo = AirportInfo.FromJson(response);
+            Console.WriteLine(airprotsInfo.Keys.Count);
+            foreach (AirportInfo info in airprotsInfo.Values)
+            {
+                if (!CityToAirports.TryGetValue(info.City, out List<AirportInfo> airportList))
+                {
+                    airportList = new List<AirportInfo>();
+                    CityToAirports.Add(info.City, airportList);
+                }
+                airportList.Add(info);
+                AirportCodes.Add(info.Iata);
+            }
+        }
+
         public void PopulateCards()
         {
             Graph.Add("Cash", new Node("Cash", "Cash"));
 
-            string[] lines = System.IO.File.ReadAllLines(@"C:\Users\ercalder\source\repos\ConsoleApp1\ConsoleApp1\data\cards.tsv");
-            foreach (string line in lines)
+            _client.DefaultRequestHeaders.Clear();
+            string address = "https://raw.githubusercontent.com/ecalder6/Surf/master/data/cards.tsv";
+            string response = _client.GetStringAsync(address).Result;
+            foreach (string line in response.Split('\n'))
             {
                 string[] tokens = line.Split('\t');
                 Card card = new Card(
@@ -208,8 +244,10 @@
 
         public void PopulateAirlines()
         {
-            string[] lines = System.IO.File.ReadAllLines(@"C:\Users\ercalder\source\repos\ConsoleApp1\ConsoleApp1\data\codes.csv");
-            foreach (string line in lines)
+            _client.DefaultRequestHeaders.Clear();
+            string address = "https://raw.githubusercontent.com/ecalder6/Surf/master/data/codes.csv";
+            string response = _client.GetStringAsync(address).Result;
+            foreach (string line in response.Split('\n'))
             {
                 string[] tokens = line.Split(',');
                 AirlineToCode.Add(tokens[1], tokens[0]);
@@ -217,14 +255,15 @@
                 Graph.Add(tokens[0], new Node(tokens[0], tokens[1]));
             }
 
-            lines = System.IO.File.ReadAllLines(@"C:\Users\ercalder\source\repos\ConsoleApp1\ConsoleApp1\data\transfer.tsv");
+            address = "https://raw.githubusercontent.com/ecalder6/Surf/master/data/transfer.tsv";
+            response = _client.GetStringAsync(address).Result;
             Graph.Add("DC", new Node("DC", "Diner's Club"));
             Graph.Add("SPG", new Node("SPG", "Starwood Preferred Guest"));
             Graph.Add("MR", new Node("MR", "American Express Membership Rewards"));
             Graph.Add("UR", new Node("UR", "Chase Ultimate Rewards"));
             Graph.Add("TY", new Node("TY", "Citi ThankYou"));
 
-            foreach (string line in lines)
+            foreach (string line in response.Split('\n'))
             {
                 string[] tokens = line.Split('\t');
                 string airline = tokens[0];
@@ -243,6 +282,18 @@
                 AddEdge(mr, "MR", code);
                 AddEdge(ur, "UR", code);
                 AddEdge(ty, "TY", code);
+            }
+        }
+
+        public void AddAirports(List<string> airports, Location place, string input)
+        {
+            if (AirportCodes.Contains(input) || !CityToAirports.TryGetValue(place.PlaceName, out List<AirportInfo> fromAirportInfo))
+            {
+                airports.Add(input);
+            }
+            else
+            {
+                airports.AddRange(fromAirportInfo.Select(a => a.Iata));
             }
         }
 
@@ -278,6 +329,25 @@
                 Console.WriteLine(token);
                 return 0;
             }
+        }
+
+        private string GenerateAwardURL(List<string> airports, char property)
+        {
+            string address = string.Empty;
+            bool first = property == 'f';
+            foreach (string airport in airports)
+            {
+                if (first)
+                {
+                    address += string.Format("?{0}={1}", property, airport);
+                    first = false;
+                }
+                else
+                {
+                    address += string.Format("&{0}={1}", property, airport);
+                }
+            }
+            return address;
         }
     }
 }
