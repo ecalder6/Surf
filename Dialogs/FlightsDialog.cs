@@ -79,15 +79,15 @@
                     {
                         // Todo: images?
                         Title = string.Format("{0} by {1}", card.Name, card.Issuer),
-                        Subtitle = string.Format("Get {1} points/miles bonus by spending ${2} within {3} days.", 
-                        card.RecommendationWeight, card.Bonus, card.MinimumSpend, card.DaysForMinSpend),
+                        Subtitle = string.Format("Get {1} points/miles bonus by spending ${2} within {3} months.", 
+                        card.RecommendationWeight, card.Bonus, card.MinimumSpend, card.DaysForMinSpend / 30),
                         Buttons = new List<CardAction>()
                         {
                             new CardAction()
                             {
                                 Title = "More details",
                                 Type = ActionTypes.OpenUrl,
-                                Value = $"https://www.bing.com/search?q=" + HttpUtility.UrlEncode(string.Format("{0} {1}", card.Issuer, card.Name))
+                                Value = $"https://www.bing.com/search?q=" + HttpUtility.UrlEncode(string.Format("{0} {1} credit card", card.Issuer, card.Name))
                             }
                         }
                     };
