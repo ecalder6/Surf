@@ -1,4 +1,4 @@
-﻿namespace SurferBot
+﻿namespace Surf
 {
     using System.Reflection;
     using System.Web.Http;

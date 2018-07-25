@@ -1,4 +1,4 @@
-﻿namespace SurferBot.Dialogs
+﻿namespace Surf.Dialogs
 {
     using System;
     using System.Collections.Generic;
@@ -16,7 +16,7 @@
         public async Task StartAsync(IDialogContext context)
         {
             var welcomeMessage = context.MakeMessage();
-            var message = $"Welcome to Travel Surfer!";
+            var message = $"Welcome to Surf!";
             welcomeMessage.Text = message;
             welcomeMessage.Speak = message;
             await context.PostAsync(welcomeMessage);
@@ -138,7 +138,7 @@
             // Filter for the recommended credit cards.
             List<Card> recommendedCreditCards = GenerateRecommendations(creditCards);
 
-            return creditCards;
+            return recommendedCreditCards;
         }
 
         private List<Card> GenerateRecommendations(List<Card> cards)

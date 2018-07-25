@@ -1,4 +1,4 @@
-﻿namespace SurferBot
+﻿namespace Surf
 {
     using Newtonsoft.Json;
     using AwardInfoJson;

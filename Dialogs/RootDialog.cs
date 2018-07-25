@@ -1,4 +1,4 @@
-﻿namespace SurferBot.Dialogs
+﻿namespace Surf.Dialogs
 {
     using System;
     using System.Threading.Tasks;

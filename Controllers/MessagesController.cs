@@ -1,4 +1,4 @@
-﻿namespace SurferBot
+﻿namespace Surf
 {
     using System.Net;
     using System.Net.Http;

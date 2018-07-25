@@ -1,4 +1,4 @@
-﻿namespace SurferBot
+﻿namespace Surf
 {
     using System.Web.Http;
     using Newtonsoft.Json;
