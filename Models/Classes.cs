@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace SurferBot
 {
@@ -18,11 +14,12 @@ namespace SurferBot
         public bool IsCurrentBestOffer { get; set; }
         public float Bonus { get; set; }
         public float MinimumSpend { get; set; }
+        public int RecommendationWeight { get; set; }
 
         public Card(string issuer, string name, string rewardProgram,
             bool isPersonal, int daysForMinSpend, float annualFee,
             bool isCurrentBestOffer, float bonus, bool isFirstFeeWaived,
-            float minSpend)
+            float minSpend, int recommendationWeight)
         {
             Issuer = issuer;
             Name = name;
@@ -34,6 +31,7 @@ namespace SurferBot
             Bonus = bonus;
             IsFirstAnnualFeeWaived = isFirstFeeWaived;
             MinimumSpend = minSpend;
+            RecommendationWeight = recommendationWeight;
         }
 
         public override string ToString()

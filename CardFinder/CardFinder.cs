@@ -218,7 +218,8 @@
                     isCurrentBestOffer: string.Equals(tokens[6], "Y"),
                     bonus: float.Parse(new string(tokens[7].TakeWhile(char.IsDigit).ToArray())),
                     minSpend: tokens[9].Trim().Length == 0 || tokens[9].Trim().Equals("N/A") || tokens[9].Trim().Equals("Unknown") || tokens[9].Trim().Equals("?") ? 0 : float.Parse(new string(tokens[9].TakeWhile(char.IsDigit).ToArray())),
-                    isFirstFeeWaived: tokens[10].Trim().Equals("Y") ? true : false);
+                    isFirstFeeWaived: tokens[10].Trim().Equals("Y") ? true : false,
+                    recommendationWeight: 0);
 
                 if (!RewardToCards.TryGetValue(card.RewardProgram, out SortedList<float, List<Card>> PointsToCards))
                 {

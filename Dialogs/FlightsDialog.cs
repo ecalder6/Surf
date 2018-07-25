@@ -116,8 +116,56 @@
             List<Card> creditCards = await cardFinder.GetAwardCreditCards(fromAirports, toAirports);
 
             // Where the recommendation engine comes into play.
+            // Filter for the recommended credit cards.
+            List<Card> recommendedCreditCards = GenerateRecommendations(creditCards);
 
             return creditCards;
+        }
+
+        private List<Card> GenerateRecommendations(List<Card> cards)
+        {
+            List<Card> intermediateListOfCards = new List<Card>();
+            Console.WriteLine("============List Of Cards=================");
+            foreach (Card aCard in cards)
+            {
+                Console.WriteLine("{0}, {1}, {2}, {3}, {4}, {5}, {6}", 
+                    aCard.Name, aCard.RecommendationWeight, aCard.Bonus, aCard.DaysForMinSpend, 
+                    aCard.IsCurrentBestOffer, aCard.MinimumSpend, aCard.IsPersonal);
+                int weight = 0;
+                if (aCard.AnnualFee == 0 ? true : false)
+                    weight += 10;
+                else if (aCard.AnnualFee > 0 && aCard.IsFirstAnnualFeeWaived == true)
+                    weight += 2;
+                if (aCard.Bonus > 50000)
+                    weight += 10;
+                else if (aCard.Bonus > 25000)
+                    weight += 5;
+                if (aCard.DaysForMinSpend > 90)
+                    weight += 10;
+                else if (aCard.DaysForMinSpend > 30)
+                    weight += 5;
+                if (aCard.IsCurrentBestOffer == true)
+                    weight += 15;
+                if (aCard.MinimumSpend <= 25000)
+                    weight += 10;
+                else if (aCard.MinimumSpend <= 10000)
+                    weight += 5;
+                if (aCard.IsPersonal == true) // this is to be confirmed if any preference needs to be applied if this is a personal card since the requester criteria data is unavailable
+                    weight += 10;
+                aCard.RecommendationWeight = weight;
+                intermediateListOfCards.Add(aCard);
+            }
+            Console.WriteLine("-------------------------------------------");
+            List<Card> SortedList = intermediateListOfCards.OrderByDescending(o => o.RecommendationWeight).ToList();
+            Console.WriteLine("============List Of Cards Sorted by Recommendation =================");
+            foreach (Card aCard in SortedList)
+            {
+                Console.WriteLine("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}",
+                    aCard.Name.ToString(), aCard.RecommendationWeight.ToString(), aCard.Bonus.ToString(), aCard.DaysForMinSpend.ToString(), aCard.IsCurrentBestOffer.ToString(), aCard.MinimumSpend.ToString(), aCard.IsPersonal.ToString(), aCard.AnnualFee.ToString(), aCard.IsFirstAnnualFeeWaived.ToString());
+            }
+            Console.WriteLine("-------------------------------------------");
+
+            return SortedList;
         }
     }
 }
