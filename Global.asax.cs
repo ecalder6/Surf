@@ -33,6 +33,10 @@
                         .Keyed<IBotDataStore<BotData>>(AzureModule.Key_DataStore)
                         .AsSelf()
                         .SingleInstance();
+                    builder
+                      .RegisterType<TextToSpeakActivityMapper>()
+                      .AsImplementedInterfaces()
+                      .SingleInstance();
                 });
             GlobalConfiguration.Configure(WebApiConfig.Register);
         }

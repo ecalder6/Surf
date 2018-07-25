@@ -50,6 +50,14 @@
             return new List<Card>(0);
         }
 
+        public List<Card> GetCashBackCreditCards(float price)
+        {
+            List<Card> result = new List<Card>();
+            Node cashNode = Graph["Cash"];
+            AddCardsToResult(result, RewardToCards["Cash"], cashNode, price, 1);
+            return result;
+        }
+
         public async Task<float> GetFlightPriceAsync(Location origin, Location destination, DateTime departureDate, DateTime returnDate)
         {
             _client.DefaultRequestHeaders.Clear();

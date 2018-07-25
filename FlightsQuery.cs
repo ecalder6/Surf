@@ -6,18 +6,16 @@
     [Serializable]
     public class FlightsQuery
     {
-        // TODO see if we need something like this to get this read
-        // speak: SSMLHelper.Speak()
-        [Prompt("Please tell me which city or airport you are leaving from?")]
+        [Prompt("Which city or airport are you leaving from?")]
         public string Origin { get; set; }
 
-        [Prompt("Please tell me which city or airport you are headed to?")]
+        [Prompt("Where would you like to go?")]
         public string Destination { get; set; }
         
-        [Prompt("What date do you want to leave?")]
+        [Prompt("When would you like to go?")]
         public DateTime DepartDate { get; set; }
 
-        [Prompt("What date do you want to return?")]
+        [Prompt("When would you like to come back?")]
         public DateTime ReturnDate { get; set; }
     }
 }

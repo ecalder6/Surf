@@ -10,6 +10,11 @@
     {
         public async Task StartAsync(IDialogContext context)
         {
+            var welcomeMessage = context.MakeMessage();
+            var message = $"Welcome to Surf!";
+            welcomeMessage.Text = message;
+            welcomeMessage.Speak = message;
+            await context.PostAsync(welcomeMessage);
             context.Wait(MessageReceivedAsync);
         }
 

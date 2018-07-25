@@ -15,17 +15,11 @@
     {
         public async Task StartAsync(IDialogContext context)
         {
-            var welcomeMessage = context.MakeMessage();
-            var message = $"Welcome to Surf!";
-            welcomeMessage.Text = message;
-            welcomeMessage.Speak = message;
-            await context.PostAsync(welcomeMessage);
-
             var flightsFormDialog = FormDialog.FromForm(BuildFlightsForm, FormOptions.PromptInStart);
 
             context.Call(flightsFormDialog, ResumeAfterFlightsFormDialog);
         }
-
+        
         private IForm<FlightsQuery> BuildFlightsForm()
         {
             OnCompletionAsyncDelegate<FlightsQuery> processflightsSearch = async (context, state) =>
@@ -40,7 +34,19 @@
 
             return new FormBuilder<FlightsQuery>()
                 .Field(nameof(FlightsQuery.Destination))
-                .Message("Looking for best credit cards to use to fly to {Destination}...")
+                .Field(nameof(FlightsQuery.Origin))
+                .Field(nameof(FlightsQuery.DepartDate))
+                .Field(nameof(FlightsQuery.ReturnDate),
+                    validate: async (state, response) =>
+                    {
+                        var result = new ValidateResult { IsValid = true, Value = response };
+                        if (state.DepartDate > (DateTime)response)
+                        {
+                            result.IsValid = false;
+                            result.Feedback = "Return date can't be before departure date";
+                        }
+                        return result;
+                    })
                 .AddRemainingFields()
                 .OnCompletion(processflightsSearch)
                 .Build();
@@ -51,11 +57,14 @@
             try
             {
                 var searchQuery = await result;
-                var cards = await GetCards(searchQuery);
+                (IEnumerable<Card> cards, float price) = await GetCards(searchQuery);
 
                 var response = context.MakeMessage();
-                var responseMessage = $"I found the {cards.Count()} best cards to use for your travel dates. " +
-                    $"They are sorted by a recommendation score I have computed for you.";
+                var responseMessage = $"I found {cards.Count()} credit cards to make this trip free.";
+                if (price > 0)
+                {
+                    responseMessage += string.Format($"Signing up for one of these cards will save you approximately ${0}!", price);
+                }
                 response.Text = responseMessage;
                 response.Speak = responseMessage;
                 await context.PostAsync(response);
@@ -70,7 +79,7 @@
                     {
                         // Todo: images?
                         Title = string.Format("{0} by {1}", card.Name, card.Issuer),
-                        Subtitle = string.Format("Weighted Score: {0}\nGet {1} points/miles bonus by spending ${2} within {3} days.", 
+                        Subtitle = string.Format("Get {1} points/miles bonus by spending ${2} within {3} days.", 
                         card.RecommendationWeight, card.Bonus, card.MinimumSpend, card.DaysForMinSpend),
                         Buttons = new List<CardAction>()
                         {
@@ -116,7 +125,7 @@
         }
 
         /// TODO: Populate the credit cards from the JSON
-        private async Task<IEnumerable<Card>> GetCards(FlightsQuery searchQuery)
+        private async Task<(IEnumerable<Card> cards, float price)> GetCards(FlightsQuery searchQuery)
         {
             CardFinder cardFinder = new CardFinder();
             cardFinder.PopulateAirports();
@@ -133,12 +142,16 @@
             cardFinder.AddAirports(fromAirports, origin, searchQuery.Origin);
             cardFinder.AddAirports(toAirports, destination, searchQuery.Destination);
             List<Card> creditCards = await cardFinder.GetAwardCreditCards(fromAirports, toAirports);
+            if (minPrice > 0)
+            {
+                creditCards.AddRange(cardFinder.GetCashBackCreditCards(minPrice));
+            }
 
             // Where the recommendation engine comes into play.
             // Filter for the recommended credit cards.
             List<Card> recommendedCreditCards = GenerateRecommendations(creditCards);
 
-            return recommendedCreditCards;
+            return (cards: recommendedCreditCards, price: minPrice);
         }
 
         private List<Card> GenerateRecommendations(List<Card> cards)
