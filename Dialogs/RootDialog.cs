@@ -10,7 +10,7 @@
     {
         public async Task StartAsync(IDialogContext context)
         {
-            context.Wait(this.MessageReceivedAsync);
+            context.Wait(MessageReceivedAsync);
         }
 
         public virtual async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
@@ -24,7 +24,7 @@
             var ticketNumber = await result;
 
             await context.PostAsync($"Thanks for contacting our support team. Your ticket number is {ticketNumber}.");
-            context.Wait(this.MessageReceivedAsync);
+            context.Wait(MessageReceivedAsync);
         }
 
         private async Task ResumeAfterOptionDialog(IDialogContext context, IAwaitable<object> result)
@@ -39,7 +39,7 @@
             }
             finally
             {
-                context.Wait(this.MessageReceivedAsync);
+                context.Wait(MessageReceivedAsync);
             }
         }
     }

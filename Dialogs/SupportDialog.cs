@@ -8,9 +8,10 @@
     [Serializable]
     public class SupportDialog : IDialog<int>
     {
+        // CHANGE should be synchronous?
         public async Task StartAsync(IDialogContext context)
         {
-            context.Wait(this.MessageReceivedAsync);
+            context.Wait(MessageReceivedAsync);
         }
 
         public virtual async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)

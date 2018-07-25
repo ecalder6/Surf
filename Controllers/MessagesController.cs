@@ -23,7 +23,7 @@
             }
             else
             {
-                this.HandleSystemMessage(activity);
+                HandleSystemMessage(activity);
             }
 
             var response = Request.CreateResponse(HttpStatusCode.OK);

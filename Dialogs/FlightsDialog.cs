@@ -17,9 +17,9 @@
         {
             await context.PostAsync("Welcome to Travel Surfer!");
 
-            var flightsFormDialog = FormDialog.FromForm(this.BuildFlightsForm, FormOptions.PromptInStart);
+            var flightsFormDialog = FormDialog.FromForm(BuildFlightsForm, FormOptions.PromptInStart);
 
-            context.Call(flightsFormDialog, this.ResumeAfterFlightsFormDialog);
+            context.Call(flightsFormDialog, ResumeAfterFlightsFormDialog);
         }
 
         private IForm<FlightsQuery> BuildFlightsForm()
