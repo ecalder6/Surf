@@ -63,7 +63,7 @@
                 var responseMessage = $"I found {cards.Count()} credit cards to make this trip free.";
                 if (price > 0)
                 {
-                    responseMessage += string.Format($"Signing up for one of these cards will save you approximately ${0}!", price);
+                    responseMessage += $" Signing up for one of these cards will save you approximately ${price}!";
                 }
                 response.Text = responseMessage;
                 response.Speak = responseMessage;
