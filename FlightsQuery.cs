@@ -2,6 +2,7 @@
 {
     using System;
     using Microsoft.Bot.Builder.FormFlow;
+    using PlaceInfoJson;
 
     [Serializable]
     public class FlightsQuery
@@ -17,5 +18,9 @@
 
         [Prompt("When would you like to come back?")]
         public DateTime ReturnDate { get; set; }
+
+        public Location OriginLocation { get; set; }
+
+        public Location DestinationLocation { get; set; }
     }
 }

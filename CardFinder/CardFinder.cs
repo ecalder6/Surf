@@ -14,6 +14,7 @@
     using PlaceInfoJson;
     using AirportInfoJson;
 
+    [Serializable]
     class CardFinder
     {
         private static readonly HttpClient _client = new HttpClient();

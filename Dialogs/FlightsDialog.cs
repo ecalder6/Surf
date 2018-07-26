@@ -13,9 +13,16 @@
     [Serializable]
     public class FlightsDialog : IDialog<object>
     {
+        private CardFinder _cardFinder;
+
         public async Task StartAsync(IDialogContext context)
         {
             var flightsFormDialog = FormDialog.FromForm(BuildFlightsForm, FormOptions.PromptInStart);
+
+            _cardFinder = new CardFinder();
+            _cardFinder.PopulateAirports();
+            _cardFinder.PopulateAirlines();
+            _cardFinder.PopulateCards();
 
             context.Call(flightsFormDialog, ResumeAfterFlightsFormDialog);
         }
@@ -33,8 +40,43 @@
             };
 
             return new FormBuilder<FlightsQuery>()
-                .Field(nameof(FlightsQuery.Destination))
-                .Field(nameof(FlightsQuery.Origin))
+                //.Field(nameof(FlightsQuery.Destination))
+                //.Field(nameof(FlightsQuery.Origin))
+                .Field(nameof(FlightsQuery.Destination),
+                    validate: async (state, response) =>
+                    {
+                        var result = new ValidateResult { IsValid = true, Value = response };
+                        try
+                        {
+                            state.DestinationLocation = await _cardFinder.GetPlace((string)response);
+                        }
+                        catch (Exception e)
+                        {
+                            result.IsValid = false;
+                            result.Feedback = response + " is not a valid location.";
+                        }
+                        return result;
+                    })
+                .Field(nameof(FlightsQuery.Origin),
+                    validate: async (state, response) =>
+                    {
+                        var result = new ValidateResult { IsValid = true, Value = response };
+                        if (state.Destination.Equals((string)response))
+                        {
+                            result.IsValid = false;
+                            result.Feedback = "You are already at your destination.";
+                        }
+                        try
+                        {
+                            state.OriginLocation = await _cardFinder.GetPlace((string)response);
+                        }
+                        catch (Exception e)
+                        {
+                            result.IsValid = false;
+                            result.Feedback = response + " is not a valid location.";
+                        }
+                        return result;
+                    })
                 .Field(nameof(FlightsQuery.DepartDate))
                 .Field(nameof(FlightsQuery.ReturnDate),
                     validate: async (state, response) =>
@@ -47,7 +89,6 @@
                         }
                         return result;
                     })
-                .AddRemainingFields()
                 .OnCompletion(processflightsSearch)
                 .Build();
         }
@@ -127,24 +168,24 @@
         /// TODO: Populate the credit cards from the JSON
         private async Task<(IEnumerable<Card> cards, float price)> GetCards(FlightsQuery searchQuery)
         {
-            CardFinder cardFinder = new CardFinder();
-            cardFinder.PopulateAirports();
-            cardFinder.PopulateAirlines();
-            cardFinder.PopulateCards();
+            //_cardFinder = new CardFinder();
+            //_cardFinder.PopulateAirports();
+            //_cardFinder.PopulateAirlines();
+            //_cardFinder.PopulateCards();
             DateTime departureDate = searchQuery.DepartDate;
             DateTime returnDate = searchQuery.ReturnDate;
-            Location origin = await cardFinder.GetPlace(searchQuery.Origin);
-            Location destination = await cardFinder.GetPlace(searchQuery.Destination);
-            float minPrice = await cardFinder.GetFlightPriceAsync(origin, destination, departureDate, returnDate);
+            //searchQuery.OriginLocation = await _cardFinder.GetPlace(searchQuery.Origin);
+            //searchQuery.DestinationLocation = await _cardFinder.GetPlace(searchQuery.Destination);
+            float minPrice = await _cardFinder.GetFlightPriceAsync(searchQuery.OriginLocation, searchQuery.DestinationLocation, departureDate, returnDate);
 
             List<string> fromAirports = new List<string>();
             List<string> toAirports = new List<string>();
-            cardFinder.AddAirports(fromAirports, origin, searchQuery.Origin);
-            cardFinder.AddAirports(toAirports, destination, searchQuery.Destination);
-            List<Card> creditCards = await cardFinder.GetAwardCreditCards(fromAirports, toAirports);
+            _cardFinder.AddAirports(fromAirports, searchQuery.OriginLocation, searchQuery.Origin);
+            _cardFinder.AddAirports(toAirports, searchQuery.DestinationLocation, searchQuery.Destination);
+            List<Card> creditCards = await _cardFinder.GetAwardCreditCards(fromAirports, toAirports);
             if (minPrice > 0)
             {
-                creditCards.AddRange(cardFinder.GetCashBackCreditCards(minPrice));
+                creditCards.AddRange(_cardFinder.GetCashBackCreditCards(minPrice));
             }
 
             // Where the recommendation engine comes into play.

@@ -598,6 +598,7 @@ namespace PlaceInfoJson
         public Location[] Places { get; set; }
     }
 
+    [Serializable]
     public partial class Location
     {
         [JsonProperty("PlaceId")]
