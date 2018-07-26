@@ -34,20 +34,17 @@
             address += "&o=0&c=y&s=1&p=0&n=10&v=2";
             string response = await _client.GetStringAsync(address);
             var awardInfo = JsonConvert.DeserializeObject<AwardInfo>(response);
+            HashSet<Card> cards = new HashSet<Card>();
             foreach (Result result in awardInfo.Results)
             {
                 long miles = result.Miles;
                 string code = result.Airline.Code;
-                List<Card> cards = FindRewardsCards(miles, code);
-                Console.WriteLine("AIRLINE: " + result.Airline.Name + ", Miles: " + miles);
-                if (cards.Count == 0)
+                foreach (Card card in FindRewardsCards(miles, code))
                 {
-                    continue;
+                    cards.Add(card);
                 }
-                Console.WriteLine("Rewards Credit Cards: " + string.Join(", ", cards));
-                return cards;
             }
-            return new List<Card>(0);
+            return cards.ToList();
         }
 
         public List<Card> GetCashBackCreditCards(float price)
@@ -78,7 +75,7 @@
             }
             var flightQuotes = JsonConvert.DeserializeObject<FlightQuote>(response);
             SortedList<float, int> minPrices = new SortedList<float, int>();
-            foreach (Quote quote in flightQuotes.Quotes.Take(1))
+            foreach (Quote quote in flightQuotes.Quotes)
             {
                 if (!minPrices.TryGetValue(quote.MinPrice, out int count))
                 {

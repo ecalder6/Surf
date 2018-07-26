@@ -25,7 +25,7 @@
             OnCompletionAsyncDelegate<FlightsQuery> processflightsSearch = async (context, state) =>
             {
                 var searchMessage = context.MakeMessage();
-                var message = $"Searching for best credit cards to use on round trip flights from {state.Origin} to {state.Destination} " +
+                var message = $"One moment. I'm searching for the best credit cards to cover for the round trip flights from {state.Origin} to {state.Destination} " +
                 $"departing {state.DepartDate.ToString("MMMM dd, yyyy")} and returning {state.ReturnDate.ToString("MMMM dd, yyyy")}...";
                 searchMessage.Text = message;
                 searchMessage.Speak = message;
@@ -43,7 +43,7 @@
                         if (state.DepartDate > (DateTime)response)
                         {
                             result.IsValid = false;
-                            result.Feedback = "Return date can't be before departure date";
+                            result.Feedback = "Return date can't be before departure date.";
                         }
                         return result;
                     })
@@ -79,8 +79,8 @@
                     {
                         // Todo: images?
                         Title = string.Format("{0} by {1}", card.Name, card.Issuer),
-                        Subtitle = string.Format("Get {1} points/miles bonus by spending ${2} within {3} months.", 
-                        card.RecommendationWeight, card.Bonus, card.MinimumSpend, card.DaysForMinSpend / 30),
+                        Subtitle = string.Format("Get {0} signup bonus by spending ${1} within {2} months.", 
+                        card.RewardProgram.Equals("Cash") ? "$" + card.Bonus : card.Bonus + " points/miles", card.MinimumSpend, card.DaysForMinSpend / 30),
                         Buttons = new List<CardAction>()
                         {
                             new CardAction()
