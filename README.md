@@ -1,4 +1,5 @@
 # Surf
+![Surf Logo](icon.png)
 
 Travel to anywhere in the world for free! Surf is built on the Microsoft Bot Framework.
 
