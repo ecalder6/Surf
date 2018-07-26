@@ -17,3 +17,4 @@ Most credit cards offer hefty sign-up bonus to attract new users. Surf finds the
 - [Transfer Partner Master List](https://frequentmiler.boardingarea.com/2014/06/24/transfer-partner-master-list/)
 - [Airport codes](https://github.com/mwgg/Airports)
 - [Skyscanner API](https://partners.skyscanner.net/affiliates/travel-apis/)
+- Icon made by [Icon Pond](https://www.flaticon.com/authors/popcorns-arts) from www.flaticon.com 
